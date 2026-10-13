@@ -30,5 +30,5 @@ VertexLitGeneric
 	
 	$nocull 1
 	$selfillum 1
-	$nodecal" 1
+	$nodecal 1
 }

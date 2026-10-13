@@ -7,7 +7,7 @@ $additive 0
 $rimlight 0
 $selfillum 1
 $selfillummask "models/l4d2br/weapons/pumpshotgun_3232260090/v_shotgun_wood_mask"
-$selfillumtint [0.1 0.1 0.1]
+$selfillumtint "[0.1 0.1 0.1]"
 
 $phong 0
 "GPU>=2?$phong" 1

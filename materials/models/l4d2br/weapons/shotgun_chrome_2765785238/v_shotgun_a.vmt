@@ -35,3 +35,5 @@ VertexLitGeneric
 	animatedTextureFrameNumVar $frame
 	animatedTextureFrameRate 10
 }
+}
+}
