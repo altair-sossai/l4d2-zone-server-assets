@@ -1,0 +1,14 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# Game and image binaries
+*.mdl binary
+*.vvd binary
+*.vtx binary
+*.phy binary
+*.vtf binary
+*.ani binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.psd binary
