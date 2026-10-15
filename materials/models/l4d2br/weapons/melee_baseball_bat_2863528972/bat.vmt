@@ -1,0 +1,54 @@
+VertexLitGeneric
+{
+$baseTexture "models/l4d2br/weapons/melee_baseball_bat_2863528972/bat_dr"
+$bumpmap "models\Weapons\melee/Bat_normal"
+phong 1
+$phongboost 150
+$phongfresnelranges "[1.0 1.3 1.1]"
+$phongalbedotint 1
+$envmap env_cubemap
+$normalmapalphaenvmapmask 1
+$envmapfresnel 1
+$envmaptint "[2.5 1.5 .5]"
+
+$detail "models/infected/hunter/hunter_01_detail.vtf"
+$detailscale "1.75"
+$detailblendfactor .001 
+$detailblendmode 0
+$detailAmount 0
+"$selfillum" 1
+Proxies
+{
+PlayerTeam
+{
+team 5 
+resultVar $proxTeam
+}
+Subtract
+{
+srcVar1 $one
+srcVar2 $proxRange
+resultVar $alpha
+}
+Multiply
+{
+srcVar1 $alpha
+srcVar2 $proxTeam
+resultVar $alpha
+}
+TextureScroll
+{
+texturescrollvar $baseTextureTransform
+texturescrollrate 0.5
+texturescrollangle 100.00
+}
+"Sine"
+		{
+			"resultVar"	"$alpha"
+			"sineperiod"	1
+			"sinemin"	0.3
+			"sinemax"	1
+			"timeoffset"	2220
+		}
+}
+}

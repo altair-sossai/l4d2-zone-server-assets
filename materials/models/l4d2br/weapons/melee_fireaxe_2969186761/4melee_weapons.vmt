@@ -1,0 +1,40 @@
+VertexLitGeneric	//着色器类型 要透明则用LightMappedGeneric
+{
+	$basetexture	"models/l4d2br/weapons/melee_fireaxe_2969186761/4melee_weapons"	
+	$bumpmap	"models/l4d2br/weapons/melee_fireaxe_2969186761/4melee_weapons_normal"	
+	
+	//$lightwarptexture	"models/l4d2br/weapons/melee_fireaxe_2969186761/lightwarp_pink"
+	$phong	"1"	
+	$phongboost	"1.3"	
+	$phongfresnelranges	"[.6 1 1.5]"	
+	
+
+	$phongalbedotint	"1"	//以basetexture作为反光色调参考，但优先级比phongtint低
+	$phongalbedoboost	"2"	//增强反射颜色的亮度
+	$phongexponent	"32"	//冯氏光照的密度（高光点的面积大小），数值越大，高光点越小
+	
+	
+	
+	$envmapfresnel	"1"	//在phongfresnelranges启用时生效，调节环境反射菲涅尔效果
+	
+	$rimlight	"1"	//模型的轮廓光，在phong开启时生效
+	//$rimlightexponent	"255"	//轮廓光密度
+	//$rimlightboost	"255"	//轮廓光亮度
+	
+	$halflambert	"1"	//半兰伯特参数，增加亮度效果，但不明显
+	
+	
+	//$selfillum 1
+	$selfillumtint "[.6 .6 .6]"
+	
+		
+	Proxies	//动态贴图，21帧
+	{
+		AnimatedTexture
+		{
+			animatedTextureVar $basetexture
+			animatedTextureFrameNumVar $frame
+			animatedTextureFrameRate 10
+		}
+	}
+}

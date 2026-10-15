@@ -1,0 +1,6 @@
+VertexLitGeneric
+{
+$basetexture "models/l4d2br/weapons/smg_mp5_2415413374/mp5_1"
+$envmap env_cubemap
+$envmapmask "models/l4d2br/weapons/smg_mp5_2415413374/mp5_1_ref"
+}

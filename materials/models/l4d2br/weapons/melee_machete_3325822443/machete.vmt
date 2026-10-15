@@ -1,0 +1,132 @@
+VertexLitGeneric
+{
+$baseTexture "models/l4d2br/weapons/melee_machete_3325822443/machete"
+
+$selfillum 1
+$selfillummask "models/l4d2br/weapons/melee_machete_3325822443/ad"
+$normalmapalphaenvmapmask 1
+//$selfillumtint "[.1 .1 .1]"
+//$halflambert 1
+$phong 1
+$phongboost 5
+
+$envmap env_cubemap
+$envmapfresnel 1
+$envmapFresnelMinMaxExp "[0 5 .4]"
+
+$detail "models/infected/hunter/hunter_01_detail.vtf"
+$detailscale "1.75"
+$detailblendfactor .001 
+$detailblendmode 0
+$detailAmount 0
+
+// WARNING FOR OLD USERS : In this method, frame 0 IS DISPLAYED
+
+// You ONLY have to change what's below (unless you want to add the Proxy for Bumpmap Support at the very end)
+// The number below this is the number of the LAST FRAME you have in your VTF ; 
+
+	$lastframenumber 6 // <== [[MODIFY ONLY THIS]]
+
+/// DO NOT TOUCH ANYTHING BELOW THAT POINT without knowing what you're doing
+
+$framenumber 0 // This value is the "real" value we'll use, it will be .74 more than $lastframenumber to ensure that the last frame shows (.74 seems to give more equal RNG than .99 for unknown reason)
+$frame 1000 // This is the N?of the frame, chaging this will change the frame of the texture (it's an already defined variable). Setting it to 1000 allows us to use the frame 0, we usually compare if it's greater than 500, but here it's not needed
+$zero 0
+$sf "0.74" //  This is what we'll add to $lastframenumber to form $framenumber
+$one 1
+
+$rand 0 // This is the first random number we'll use
+$randtwo 0 // This is the second random number we'll use
+$randtwostock 0 // This is an "instant copy" of the $randtwo number. It's stored only once to avoid the loop of UniformNoise
+
+$docorr 0 // This stores if a correction has to be done, it'll become 1 if we have to 
+$corrtoapply 0 // This is the amplitude of the correction to apply if we have to
+
+"Proxies"
+{
+	
+	// We add .74 to the number of frames that's used to draw the random numbers so the last frame will likely show. (If we didn't and had 5 frames, the frame 5 would appear only if the random number generated was 5.00, witch is unlikely to happen. Strangely, 
+	//.74 seem to be the only value to guarantee a correct skins distribution)
+
+	"Add" 
+       	 {
+          	"srcVar1" "$lastframenumber"
+           	"srcVar2" "$sf"
+           	"resultVar" "$framenumber"
+       	 }
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Random Number Generation and Insert into $frame
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	// This function draws a random number associated with the "Entity". Only the guns in the World are considered as "Entities", it means...
+	// ... that this function will give 0 as a value of $rand if that material is applied to the "Hand" or the "Teammates" model.
+
+	"EntityRandom"
+           	 {
+                "scale" "$framenumber"
+                "resultVar" "$rand"
+               	}
+
+	// This function draws random numbers from 0 to the maximal frame (+0.74, see above). This will always give a result, no matter if it's an "Entity or not" 
+	// (This is the only source of RNG for the Hand and the Teammates Model)
+
+	"UniformNoise"
+       	 {
+            	"minVal" "0"
+           	"maxVal" "$framenumber"
+           	"resultVar" "$randtwo"
+       	 }
+
+	// This function stores the value of $randtwo in $randtwostock only once (when $randtwostock = 0), it prevents the value to loop and give shit
+
+	"LessOrEqual"
+        	{
+          	  "LessEqualVar" "$randtwo"
+          	  "greaterVar" "$randtwostock"
+          	  "srcVar1" "$randtwostock"
+           	  "srcVar2" "$zero"            
+          	  "resultVar" "$randtwostock"    
+       	 }
+	
+	// This function adds the 2 random numbers to create the frame. At that point, the frame number can be higher than the limit since we add 2 random numbers that can both go from 0 to the number of the last frame
+	// This is done like this because strangely, it seems that you can't store the result of EntityRandom in something else than the variable it's generated. So we have to do this like this
+
+	"Add" 
+       	 {
+          	"srcVar1" "$rand"
+           	"srcVar2" "$randtwostock"   
+           	"resultVar" "$frame"
+       	 }
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Correction if the $frame is over the frame limit
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	"LessOrEqual" // This function checks if $frame is over the limit, if yes, docorr will go from 0 to 1
+        	{
+          	  "LessEqualVar" "$zero"
+          	  "greaterVar" "$one"
+          	  "srcVar1" "$frame"
+           	  "srcVar2" "$framenumber"            
+          	  "resultVar" "$docorr"    
+       	 }
+
+	"Multiply" // This function prepares the correction to apply. The correction will always be a substraction of the $frame number to keep "even RNG". (It's Maths, trust me xD)
+        	{
+          	  "srcVar1" "$framenumber"
+           	  "srcVar2" "$docorr" // Multiplying the hypotetical correction to do with the $docorr will  result as a correction of 0 to apply if there's no correction to do ($docorr = 0)
+          	  "resultVar" "$corrtoapply"    
+       	 }
+
+	"Subtract" // This is the application of the correction to the $frame. If $docorr = 0 then $corrtoapply = 0 and there will be no correction
+        	{
+          	  "srcVar1" "$frame"
+           	  "srcVar2" "$corrtoapply"            
+          	  "resultVar" "$frame"    
+       	 }
+
+}
+	// [Method Created by "Ellie" from L4D2 Workshop, July 2015] : Use it at your convenience
+
+}

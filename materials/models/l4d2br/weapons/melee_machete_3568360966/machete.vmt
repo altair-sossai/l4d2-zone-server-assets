@@ -1,0 +1,8 @@
+VertexLitGeneric
+{
+$basetexture "models/l4d2br/weapons/melee_machete_3568360966/machete"
+$surfaceprop default
+$selfillum 1
+$selfillummask "models/l4d2br/weapons/melee_machete_3568360966/machete_mask"
+$selfillumtint "1 1 1"
+}

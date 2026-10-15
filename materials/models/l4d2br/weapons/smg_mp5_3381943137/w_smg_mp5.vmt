@@ -1,0 +1,23 @@
+vertexlitgeneric
+{
+$baseTexture "models/l4d2br/weapons/smg_mp5_3381943137/w_smg_mp5"
+$bumpmap "models/l4d2br/weapons/smg_mp5_3381943137/fx_2"
+$selfillum 1
+$phongboost 175.0
+$normalmapalphaenvmapmask 1
+$phongexponent 10
+$phongfresnelranges "[10 10 30]"
+$BASEMAPLUMINANCEPHONGMASK 1
+$color2 "[1.5 1.5 1.5]"
+"Proxies"
+    {
+        TextureScroll
+        {
+            texturescrollvar $baseTextureTransform
+            texturescrollrate 0.01
+            texturescrollangle 45
+        }
+
+    }
+
+}

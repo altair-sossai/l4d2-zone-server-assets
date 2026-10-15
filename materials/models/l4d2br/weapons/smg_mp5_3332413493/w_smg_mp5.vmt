@@ -1,0 +1,20 @@
+vertexlitgeneric
+{
+$baseTexture "models/l4d2br/weapons/smg_mp5_3332413493/w_smg_mp5"
+$bumpmap "effects/flat_normal"
+$halflambert 1
+$phongboost 1
+$phongexponenttexture "models/l4d2br/weapons/smg_mp5_3332413493/w_smg_mp5"
+$phongalbedotint 1
+
+$phongfresnelranges "[2 10 .3]"
+$BASEMAPLUMINANCEPHONGMASK 1
+
+$ambientocclusion 1
+$phong 1
+$normalmapalphaenvmapmask 1
+$envmap env_cubemap
+$envmapfresnel 1
+$envmapFresnelMinMaxExp "[0 0 .4]"
+$envmaptint "[0.1 0.1 0.1]"
+}

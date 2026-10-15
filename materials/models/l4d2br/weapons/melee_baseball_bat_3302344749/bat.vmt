@@ -1,0 +1,38 @@
+VertexLitGeneric
+{
+$baseTexture 		      "models/l4d2br/weapons/melee_baseball_bat_3302344749/bat"
+$bumpmap 		          "models/l4d2br/weapons/melee_baseball_bat_3302344749/bat_normal"
+
+$phong	"1"
+$phongboost	"1"
+$phongfresnelranges	"[.46 .4 0.4]"
+
+//$envmap	"env_cubemap"
+//$envmaptint	"[.125 .125 .125]"
+//$normalmapalphaenvmapmask	"1"
+//$envmapfresnel	"1"
+
+$rimlight	"1"
+$rimmask	"1"
+$rimlightboost	"1"
+$rimlightexponent	"2"
+
+$detail "models/infected/hunter/hunter_01_detail.vtf"
+$detailscale "1.75"
+$detailblendfactor .001 
+$detailblendmode 0
+$detailAmount 0
+
+Proxies
+{
+BloodyHands
+{
+resultVar $detailAmount
+}
+Equals
+{
+srcVar1 $detailAmount
+resultVar $detailblendfactor
+}
+}
+}

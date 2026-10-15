@@ -1,0 +1,9 @@
+VertexLitGeneric
+{
+$basetexture "models/l4d2br/weapons/melee_fireaxe_3776818868/4melee_weapons"
+$bumpmap "models/l4d2br/weapons/melee_fireaxe_3776818868/4melee_weapons_normal"
+$surfaceprop default
+$selfillum 1
+$selfillummask "models/l4d2br/weapons/melee_fireaxe_3776818868/axe_mask"
+$selfillumtint "1 1 1"
+}

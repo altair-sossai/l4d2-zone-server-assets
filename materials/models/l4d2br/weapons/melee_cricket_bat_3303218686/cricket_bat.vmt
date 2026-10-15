@@ -1,0 +1,28 @@
+VertexLitGeneric
+{
+$baseTexture "models/l4d2br/weapons/melee_cricket_bat_3303218686/cricket_bat"
+$bumpmap "models/l4d2br/weapons/melee_cricket_bat_3303218686/cricket_bat_normal"
+
+$phong 1
+$phongboost 1
+$phongexponent 1
+$phongfresnelranges "[.1 .4 2]"
+
+$detail "models/infected/hunter/hunter_01_detail.vtf"
+$detailscale "1.75"
+$detailblendfactor .001 
+$detailblendmode 0
+$detailAmount 0
+Proxies
+{
+BloodyHands
+{
+resultVar $detailAmount
+}
+Equals
+{
+srcVar1 $detailAmount
+resultVar $detailblendfactor
+}
+}
+}
