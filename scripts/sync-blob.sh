@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage="Usage: sync-blob.sh --account <name> --container <name> --source <dir> [--prefix <path>] [--cache-control <value>] [--dry-run]"
+usage="Usage: sync-blob.sh [--account <name>] --container <name> --source <dir> [--prefix <path>] [--cache-control <value>] [--dry-run]
+Without --account, the storage comes from AZURE_STORAGE_CONNECTION_STRING."
 
 account=""
 container=""
@@ -22,16 +23,21 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ -z "$account" ] || [ -z "$container" ] || [ -z "$source" ]; then
+if [ -z "$container" ] || [ -z "$source" ] || { [ -z "$account" ] && [ -z "${AZURE_STORAGE_CONNECTION_STRING:-}" ]; }; then
   echo "$usage" >&2
   exit 1
+fi
+
+storage=()
+if [ -n "$account" ]; then
+  storage=(--account-name "$account")
 fi
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
 az storage blob list \
-  --account-name "$account" \
+  "${storage[@]}" \
   --container-name "$container" \
   ${prefix:+--prefix "$prefix/"} \
   --num-results "*" \
@@ -65,15 +71,19 @@ while IFS= read -r name; do
   cp "$source/$file" "$work/staging/$file"
 done < "$work/changed"
 
+uploaded=0
+
 upload() {
   local pattern="$1"
   local content_type="$2"
-  if ! find "$work/staging" -type f -name "$pattern" | grep -q .; then
+  local count
+  count=$(find "$work/staging" -type f -name "$pattern" | wc -l | tr -d ' ')
+  if [ "$count" -eq 0 ]; then
     return
   fi
 
   az storage blob upload-batch \
-    --account-name "$account" \
+    "${storage[@]}" \
     --destination "$container" \
     ${prefix:+--destination-path "$prefix"} \
     --source "$work/staging" \
@@ -83,8 +93,15 @@ upload() {
     ${content_type:+--content-type "$content_type"} \
     ${cache_control:+--content-cache-control "$cache_control"} > /dev/null
   find "$work/staging" -type f -name "$pattern" -delete
+  uploaded=$((uploaded + count))
 }
 
 upload "*.avif" "image/avif"
 upload "*.webp" "image/webp"
 upload "*" ""
+
+echo "$container/${prefix:+$prefix/}: uploaded $uploaded files"
+if [ "$uploaded" -ne "$changed" ]; then
+  echo "Expected to upload $changed files" >&2
+  exit 1
+fi
