@@ -1,0 +1,16 @@
+VertexLitGeneric
+{
+$baseTexture "models/l4d2br/weapons/pistol_magnum_3027541381/deserteagle"
+$phong 1
+$phongboost 4
+$phongexponent 120
+$phongfresnelranges "[.6 1 2]"
+$basemapalphaphongmask 1
+$selfillum 1
+$basealphaenvmapmask 1
+$envmap env_cubemap
+
+
+
+$phongalbedotint 1
+}

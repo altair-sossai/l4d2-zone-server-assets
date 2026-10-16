@@ -1,0 +1,19 @@
+VertexLitGeneric
+{
+$baseTexture "models/l4d2br/weapons/pistol_magnum_3618145490/deserteagle"
+$bumpmap "models/l4d2br/weapons/pistol_magnum_3618145490/deserteagle_n"
+// --- CẤU HÌNH NHỰA (PLASTIC LOOK) ---
+	$phong 1
+	$phongboost 2                   // Độ sáng vừa phải (Nhựa không sáng chói như kim loại)
+	
+	// Đây là dòng quan trọng nhất tạo ra chất liệu nhựa:
+	$phongexponent 15               // Số NHỎ (10-20) = Bóng tỏa rộng, nhìn giống sáp/nhựa. (Số lớn >60 là kim loại/kính)
+	
+	$phongfresnelranges "[0.1 0.5 1]" // Độ bóng đều hơn ở các góc nhìn
+	$phongalbedotint 1              // Bóng sẽ ám màu của nhựa (xanh/cam) thay vì trắng toát
+
+	// --- PHẢN XẠ MÔI TRƯỜNG ---
+	$envmap "env_cubemap"
+	$envmaptint "[0.05 0.05 0.05]"  // Rất thấp. Nhựa đồ chơi ít phản chiếu môi trường rõ nét.
+	$normalmapalphaenvmapmask 1     // Dùng kênh alpha của normal map để mask (mặc định)
+}

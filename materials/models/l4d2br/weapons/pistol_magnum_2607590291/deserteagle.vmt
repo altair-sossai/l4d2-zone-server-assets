@@ -1,0 +1,33 @@
+VertexLitGeneric
+{
+//basics
+"$baseTexture" "models/l4d2br/weapons/pistol_magnum_2607590291/deserteagle"
+"$bumpmap" 	"models/l4d2br/weapons/pistol_magnum_2607590291/deserteagle_normal"
+
+//phong
+$phong 1
+$phongboost 4
+$phongalbedoboost 60
+$phongfresnelranges "[.8 .8 1]"
+$phongexponenttexture "models/l4d2br/weapons/pistol_magnum_2607590291/deserteagle_e"
+$basemapalphaphongmask 1
+$phongalbedotint 1
+$phongdisablehalflambert 1
+
+//env
+$envmap env_cubemap
+$envmapfresnel 1
+$envmapFresnelMinMaxExp "[10 40 .4]"
+$envmaptint 		"[1 1 1]"
+
+//other
+"$nocompress" "1"
+"$nocull" "1"
+"$halflambert" "1"
+"$nodecal" "1"
+
+//glow
+$selfillum 1
+$selfillummask "models/l4d2br/weapons/pistol_magnum_2607590291/glow1"
+$selfillumtint "0.08 0.08 0.08"
+}

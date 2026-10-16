@@ -1,0 +1,15 @@
+VertexLitGeneric
+{
+	$basetexture "models/l4d2br/weapons/pistol_magnum_3028559765/deserteagle"
+	$bumpmap "models/l4d2br/weapons/pistol_magnum_3028559765/deserteagle_b"
+
+	$phong 1
+	$phongexponenttexture "models/l4d2br/weapons/pistol_magnum_3028559765/deserteagle_e"
+	$phongfresnelranges "[0.6 1 2]"
+	$phongalbedotint 1
+	$phongboost 4
+	$basemapalphaphongmask 1
+
+	$selfillum 1
+	$selfillummask "models/l4d2br/weapons/pistol_magnum_3028559765/deserteagle_a"
+}

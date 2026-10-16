@@ -1,0 +1,30 @@
+VertexLitGeneric
+{
+$baseTexture                    "models/l4d2br/weapons/pistol_magnum_3757405260/deserteagle"
+$bumpmap                        "models/l4d2br/weapons/pistol_magnum_3757405260/deserteagle_normal"
+
+
+$phong 1
+$phongboost 2
+
+$phongfresnelranges "[.6 2 .1]"
+$normalmapalphaenvmapmask 1 
+$envmap env_cubemap
+$envmapfresnel 1
+$envmaptint "[0.8 0.8 0.8]"
+$phongalbedotint 1
+$selfillum 1
+$selfillumboost 25
+
+"Proxies"
+    {
+        "AnimatedTexture"
+        {
+            "animatedtexturevar"         "$basetexture"      // 作用的目标变量
+            "animatedtextureframenumvar"    "$frame"            // 告诉引擎改变帧数
+            "animatedtextureframerate"      "12"                // 动画播放帧率（每秒多少帧）
+        }
+    }
+
+
+}
