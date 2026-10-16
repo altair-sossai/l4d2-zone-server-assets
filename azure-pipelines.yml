@@ -54,43 +54,19 @@ stages:
                 rm -f $(remoteTempFolder)/*.tar.gz
 
           - task: AzureCLI@2
-            displayName: "☁️ Upload game assets to Azure Blob Storage"
+            displayName: "☁️ Sync changed files to Azure Blob Storage"
             inputs:
               azureSubscription: "PessoalSubscription"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                az storage blob upload-batch \
-                  --account-name l4d2playstats \
-                  --destination assets \
-                  --source "$(Build.Repository.LocalPath)/assets" \
-                  --pattern "*" \
-                  --overwrite
-
-          - task: AzureCLI@2
-            displayName: "⚡ Upload FastDL files to Azure Blob Storage"
-            inputs:
-              azureSubscription: "PessoalSubscription"
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              inlineScript: |
-                az storage blob upload-batch \
-                  --account-name l4d2playstats \
-                  --destination fastdl \
-                  --source "$(Build.Repository.LocalPath)/fastdl" \
-                  --pattern "*" \
-                  --overwrite
-                az storage blob upload-batch \
-                  --account-name l4d2playstats \
-                  --destination fastdl \
-                  --destination-path models \
-                  --source "$(Build.Repository.LocalPath)/models" \
-                  --pattern "*" \
-                  --overwrite
-                az storage blob upload-batch \
-                  --account-name l4d2playstats \
-                  --destination fastdl \
-                  --destination-path materials \
-                  --source "$(Build.Repository.LocalPath)/materials" \
-                  --pattern "*" \
-                  --overwrite
+                set -euo pipefail
+                root="$(Build.Repository.LocalPath)"
+                sync="bash $root/scripts/sync-blob.sh --account l4d2playstats"
+                $sync --container assets --source "$root/assets/skin-shots" --prefix skin-shots --cache-control "public, max-age=31536000, immutable"
+                mkdir -p "$(Agent.TempDirectory)/assets"
+                rsync -a --exclude skin-shots "$root/assets/" "$(Agent.TempDirectory)/assets/"
+                $sync --container assets --source "$(Agent.TempDirectory)/assets"
+                $sync --container fastdl --source "$root/fastdl"
+                $sync --container fastdl --source "$root/models" --prefix models
+                $sync --container fastdl --source "$root/materials" --prefix materials

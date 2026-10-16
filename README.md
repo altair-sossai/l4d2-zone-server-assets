@@ -12,8 +12,15 @@ Static files used by [l4d2-zone-server](https://github.com/altair-sossai/l4d2-zo
 - `models/` and `materials/` must exist on the server (the plugins precache them) and on the FastDL (clients download them).
 - `fastdl/` holds files that only clients download (e.g. patent sprites).
 - `assets/` holds the MOTD and host pages and images shown in game.
+- `assets/skin-shots/<skin>/` holds the in-game photos of each weapon skin shown in the site shop, made with [l4d2-screenshot-studio](https://github.com/altair-sossai/l4d2-screenshot-studio). Each skin has six photos (`1` first person, `2` to `4` on the ground, `5` and `6` in third person) in AVIF and WebP: `N` is 1280×720, `N-thumb` is 320×180 and `N-card` (photos 1, 5 and 6) is a 540 px square for the shop card. They are served with a one-year cache, so a skin whose photos are redone needs its `shots` version raised in the site's `skins.json`.
 
 The pipeline in `azure-pipelines.yml` runs on every push to `main`.
+
+Uploads to Azure Blob Storage go through `scripts/sync-blob.sh`, which compares the MD5 of every local file with the blob's `Content-MD5` and uploads only new or changed files. Nothing is deleted from the storage. To see what a push would upload without uploading anything:
+
+```bash
+bash scripts/sync-blob.sh --account l4d2playstats --container assets --source assets --dry-run
+```
 
 ## Weapon skin credits
 
