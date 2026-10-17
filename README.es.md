@@ -12,7 +12,7 @@ Archivos estáticos usados por [l4d2-zone-server](https://github.com/altair-soss
 | `assets/`    | —                                                  | `assets/`                                               |
 
 - `models/` y `materials/` tienen que existir en el servidor (los plugins hacen el precache y los agregan a la tabla de descargas) y en el FastDL (los clientes los descargan).
-  - `models/l4d2br/weapons/<weapon>/` tiene un view model (`v.*`) y un world model (`w.*`) combinados por arma, con una skin family por skin.
+  - `models/l4d2br/weapons/<weapon>/` tiene un view model (`v.*`) y un world model (`w.*`) combinados por arma, con una skin family por skin. Las seis armas de fuego (SMG, MAC-10, MP5, escopeta, chrome y Magnum) empiezan con las families del modelo original, así que un arma sin skin se ve original también en el modelo combinado.
   - `materials/models/l4d2br/weapons/<weapon>_<workshopId>/` tiene las texturas de una skin.
   - `materials/decals/l4d2br/` tiene los decals del plugin `map-decals`.
 - `fastdl/` tiene archivos que solo descargan los clientes: los sprites de patente de `l4d2_show_patent_icon` (`materials/sprites/`) y una copia de los decals. Su contenido va a la raíz del FastDL, junto a `models/` y `materials/`.
@@ -112,12 +112,22 @@ bash scripts/sync-blob.sh --account <storage-account> --container assets --sourc
 AZURE_STORAGE_CONNECTION_STRING='<connection-string>' bash scripts/sync-blob.sh --container fastdl --source fastdl --dry-run
 ```
 
+### scripts/add-stock-families.js
+
+Pone las families del modelo original al inicio de los modelos combinados de mano y de mundo de cada arma de fuego, así la family `0` se ve idéntica al arma original. El servidor usa el modelo combinado en primera persona en toda arma de fuego, con la family de la skin o la family original del arma, y el cliente del anti-cheat apunta el juego a él para terminar con el parpadeo en los cambios de animación. El script lee los modelos originales de los VPK del juego (primero `update/`), agrega sus texturas y carpetas de búsqueda de materiales y omite un modelo que ya las tiene:
+
+```bash
+node scripts/add-stock-families.js "<carpeta de Left 4 Dead 2>" <l4d2-zone-server>/addons/sourcemod/configs/weapon_skins.cfg [check]
+```
+
+Muestra el `stock_skins` de cada arma de fuego (2 en la SMG, MAC-10 y escopetas, 1 en la MP5, 3 en la Magnum): la cantidad de families originales y, por lo tanto, la family de la primera skin de esa arma.
+
 ## Agregar una skin nueva
 
 El id de la skin es el mismo en todos los lugares de abajo (por ejemplo `dark-matter`). El checklist completo, incluido el formato del modelo combinado, está en la [wiki de l4d2-zone-server](https://github.com/altair-sossai/l4d2-zone-server/blob/master/docs/weapon-skins/02-assets.es.md#agregar-una-skin-nueva-checklist).
 
 1. Usa solo skins de la Steam Workshop que cambien únicamente texturas, hechas para el modelo original de un arma soportada, y solo si su autor permite la redistribución.
-2. **Este repositorio:** pon sus materiales en `materials/models/l4d2br/weapons/<weapon>_<workshopId>/`, con las rutas dentro de cada `.vmt` apuntando a esa carpeta (texturas de 1024 px como máximo). Rehaz los modelos combinados de esa arma en `models/l4d2br/weapons/<weapon>/`: el índice de la skin family es la posición de la skin entre las skins de esa arma en `weapon_skins.cfg`. Las herramientas que arman los modelos combinados todavía no están versionadas.
+2. **Este repositorio:** pon sus materiales en `materials/models/l4d2br/weapons/<weapon>_<workshopId>/`, con las rutas dentro de cada `.vmt` apuntando a esa carpeta (texturas de 1024 px como máximo). Rehaz los modelos combinados de esa arma en `models/l4d2br/weapons/<weapon>/`: el índice de la skin family es la posición de la skin entre las skins de esa arma en `weapon_skins.cfg`, más `stock_skins` en un arma de fuego. Las herramientas que arman los modelos combinados todavía no están versionadas; en un arma de fuego, ejecuta `scripts/add-stock-families.js` después, que pone primero las families originales (ver abajo).
 3. **Este repositorio:** agrega las fotos en `assets/skin-shots/<id>/` (30 archivos, como se describe arriba) y una fila en la [tabla de créditos](#créditos-de-las-skins-de-armas) de su arma, actualizando el número del título y la lista de autores.
 4. **l4d2-zone-server:** agrega la skin a la sección `Skins` de `addons/sourcemod/configs/weapon_skins.cfg` (`weapon`, índice de la family en `skin`, carpeta `materials`) y actualiza el índice `skin` de cada skin cuya posición cambió.
 5. **[l4d2-playstats-web](https://github.com/altair-sossai/l4d2-playstats-web):** agrega una entrada a `L4D2PlayStats.Web/L4D2PlayStats.Core/Skins/Data/skins.json` (copia una existente: `id`, `weapon`, `rarity`, `price`, `workshopId`, `shots`, `author`, títulos y descripciones en en/pt/es) y su miniatura `L4D2PlayStats.Web/L4D2PlayStats.Web/wwwroot/imgs/skins/<id>.jpg`. Con `shots` en `0` la tienda muestra solo la miniatura; con `1` o más carga las fotos desde `<SkinShotsUrl>/<id>/` (`SkinShotsUrl` en la configuración del sitio, por defecto `https://l4d2playstats.blob.core.windows.net/assets/skin-shots`).
