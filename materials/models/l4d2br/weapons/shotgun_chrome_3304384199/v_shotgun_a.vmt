@@ -4,6 +4,7 @@ VertexLitGeneric
 	$bumpmap "models/l4d2br/weapons/shotgun_chrome_3304384199/v_shotgun_a_b"
 
 	$envmap "env_cubemap"
+$envmaptint "[0.1 0.1 0.1]"
 	$envmapfresnel 1
 	$envmapfresnelminmaxexp "[.8 1 .8]"
 

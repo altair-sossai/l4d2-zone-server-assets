@@ -10,6 +10,7 @@ $phongfresnelranges "[.1 .4 2]"
 $normalmapalphaenvmapmask 1
 
 $envmap env_cubemap
+$envmaptint "[0.1 0.1 0.1]"
 $envmapfresnel 1
 $envmapFresnelMinMaxExp "[0 5 .4]"
 

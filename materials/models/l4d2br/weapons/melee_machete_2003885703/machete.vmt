@@ -4,7 +4,7 @@ $baseTexture "models/l4d2br/weapons/melee_machete_2003885703/machete"
 
 $phongexponenttexture "models\Weapons\melee/Machete_exponent"
 $phong 1
-$phongboost 75
+$phongboost 10
 
 
 

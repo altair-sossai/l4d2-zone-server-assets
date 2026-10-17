@@ -2,5 +2,6 @@ VertexLitGeneric
 {
 $basetexture "models/l4d2br/weapons/smg_mp5_2878386179/mp5_1"
 $envmap env_cubemap
+$envmaptint "[0.1 0.1 0.1]"
 $envmapmask "models/l4d2br/weapons/smg_mp5_2878386179/mp5_1_ref"
 }

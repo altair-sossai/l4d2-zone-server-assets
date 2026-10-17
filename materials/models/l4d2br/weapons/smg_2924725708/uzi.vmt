@@ -18,7 +18,7 @@
 	$envmap env_cubemap
 	$envmapfresnel 1
 	$envmapFresnelMinMaxExp "[1 1 1]"
-	$envmaptint "[1.5 1.5 1.5]"
+$envmaptint "[0.1 0.1 0.1]"
 
 	"$rimlight"	"1"
 	"$rimmask"	"1"
