@@ -1,26 +1,140 @@
 # l4d2-zone-server-assets
 
+🌐 **English** | [Português](README.pt.md) | [Español](README.es.md)
+
 Static files used by [l4d2-zone-server](https://github.com/altair-sossai/l4d2-zone-server), kept in a separate repository so the heavy files are only deployed when they change.
 
-| Folder       | Game server (`/home/steam/l4d2/left4dead2/`) | Azure Blob Storage (`l4d2playstats`) |
-|--------------|----------------------------------------------|--------------------------------------|
-| `models/`    | `models/`                                    | `fastdl/models/`                     |
-| `materials/` | `materials/`                                 | `fastdl/materials/`                  |
-| `fastdl/`    | —                                            | `fastdl/`                            |
-| `assets/`    | —                                            | `assets/`                            |
+| Folder       | Game server (`/home/steam/l4d2/left4dead2/`) | Azure Blob Storage (`l4d2playstats`, `container/path`) |
+|--------------|----------------------------------------------|--------------------------------------------------------|
+| `models/`    | `models/`                                    | `fastdl/models/`                                       |
+| `materials/` | `materials/`                                 | `fastdl/materials/`                                    |
+| `fastdl/`    | —                                            | `fastdl/`                                              |
+| `assets/`    | —                                            | `assets/`                                              |
 
-- `models/` and `materials/` must exist on the server (the plugins precache them) and on the FastDL (clients download them).
-- `fastdl/` holds files that only clients download (e.g. patent sprites).
-- `assets/` holds the MOTD and host pages and images shown in game.
+- `models/` and `materials/` must exist on the server (the plugins precache them and add them to the downloads table) and on the FastDL (clients download them).
+  - `models/l4d2br/weapons/<weapon>/` holds one combined view model (`v.*`) and world model (`w.*`) per weapon, with one skin family per skin.
+  - `materials/models/l4d2br/weapons/<weapon>_<workshopId>/` holds the textures of one skin.
+  - `materials/decals/l4d2br/` holds the decals of the `map-decals` plugin.
+- `fastdl/` holds files that only clients download: the patent sprites of `l4d2_show_patent_icon` (`materials/sprites/`) and a copy of the decals. Its contents go to the root of the FastDL, next to `models/` and `materials/`.
+- `assets/` holds the MOTD and host pages (`motd.html`, `host.html`), the images they show (`.jpeg`) and their Photoshop sources (`.psd`).
 - `assets/skin-shots/<skin>/` holds the in-game photos of each weapon skin shown in the site shop, made with [l4d2-screenshot-studio](https://github.com/altair-sossai/l4d2-screenshot-studio). Each skin has six photos (`1` first person, `2` to `4` on the ground, `5` and `6` in third person) in AVIF and WebP: `N` is 1280×720, `N-thumb` is 320×180 and `N-card` (photos 1, 5 and 6) is a 540 px square for the shop card. They are served with a one-year cache, so a skin whose photos are redone needs its `shots` version raised in the site's `skins.json`.
 
-The pipeline in `azure-pipelines.yml` runs on every push to `main`.
+`.gitattributes` normalizes text files (`.vmt`, `.html`) to LF and keeps models, textures and images binary; that is what the server and the FastDL receive.
 
-Uploads to Azure Blob Storage go through `scripts/sync-blob.sh`, which compares the MD5 of every local file with the blob's `Content-MD5` and uploads only new or changed files. Nothing is deleted from the storage. To see what a push would upload without uploading anything:
+## Using the files on your own server
+
+### Game server
+
+Copy `models/` and `materials/` into the game folder (the one with `gameinfo.txt`), for example:
 
 ```bash
-bash scripts/sync-blob.sh --account l4d2playstats --container assets --source assets --dry-run
+rsync -a models materials <user>@<server-host>:<game-folder>/
 ```
+
+The `ansible/setup-server.yml` playbook of l4d2-zone-server does the same copy when a server is first set up (its header says it was not tested against a real server yet). `fastdl/` and `assets/` are not copied to the server.
+
+The `l4d2_weapon_skins` plugin reads [`addons/sourcemod/configs/weapon_skins.cfg`](https://github.com/altair-sossai/l4d2-zone-server/blob/master/addons/sourcemod/configs/weapon_skins.cfg) of l4d2-zone-server: every `view_model`, `world_model`, `models` and `materials` path there must exist in the game folder, or the plugin logs `models were not found on the server` / `materials were not found on the server` and skips that weapon or skin. Restart the server while it is empty after the models change, so players download them on connect instead of during a map change.
+
+### FastDL
+
+Clients download from `sv_downloadurl`, which l4d2-zone-server sets in `cfg/server.cfg` together with `sv_allowdownload 1`:
+
+```
+sm_cvar sv_downloadurl "https://<your-fastdl-host>/<path>"
+```
+
+The URL must point to a folder laid out like the game folder: `models/` and `materials/` from this repository, plus the contents of `fastdl/` merged into the same root. Files are served uncompressed (no `.bz2`). Any static HTTP host works, for example:
+
+```bash
+rsync -a models materials <user>@<web-host>:<web-root>/fastdl/
+rsync -a fastdl/ <user>@<web-host>:<web-root>/fastdl/
+```
+
+With Azure Blob Storage, as this server does, create a `fastdl` and an `assets` container with anonymous read access to blobs (the account must allow anonymous blob access), and set `sv_downloadurl` to `https://<storage-account>.blob.core.windows.net/fastdl`:
+
+```bash
+az storage container create --account-name <storage-account> --name fastdl --public-access blob --auth-mode login
+az storage container create --account-name <storage-account> --name assets --public-access blob --auth-mode login
+```
+
+No CORS rule is needed: the game client and the site's `<img>` tags fetch the files directly. Only the skin photos get a `Cache-Control` header (`public, max-age=31536000, immutable`); every other file is uploaded without one.
+
+### MOTD and host pages
+
+l4d2-zone-server sets `motdfile "motd.txt"` and `hostfile "host.txt"`; each of those files holds only the URL of `assets/motd.html` or `assets/host.html`, and each page shows its `.jpeg` from the `assets` container. To use your own host, change the image URL inside `motd.html` and `host.html`, upload `assets/`, and put the new page URLs in `motd.txt` and `host.txt`. The current URLs use plain `http://`, so keep the host reachable over HTTP or change them to `https://`.
+
+## Deployment pipeline
+
+The pipeline in `azure-pipelines.yml` (Azure DevOps) runs on every push to `main`:
+
+1. packs `models/` and `materials/` into `.tar.gz` files;
+2. uploads them over SSH to `remoteTempFolder` and extracts them into `gameFolder/models` and `gameFolder/materials`;
+3. syncs `assets/skin-shots/` (with the one-year cache), the rest of `assets/` to the `assets` container, and `fastdl/`, `models/` and `materials/` to the `fastdl` container.
+
+The server copy sends every file on every run; the blob sync sends only new or changed files. Neither step deletes anything, so a file removed from the repository must also be removed by hand from the game folder and from the storage.
+
+To run it with your own server and storage:
+
+| What | Where in `azure-pipelines.yml` | Value |
+|------|--------------------------------|-------|
+| Branch | `trigger` | the branch that deploys (`main`) |
+| SSH service connection | `sshServiceConnection` | name of an SSH service connection to your server; its user must be able to write to `remoteTempFolder` and `gameFolder` |
+| Temporary folder on the server | `remoteTempFolder` | for example `/home/<ssh-user>/zone-server-assets` |
+| Game folder | `gameFolder` | `<game-folder>` (the folder with `gameinfo.txt`) |
+| Azure service connection | `azureSubscription` of the `AzureCLI@2` step | name of an Azure Resource Manager service connection whose identity can list and upload blobs in the account |
+| Storage account | `--account` in the inline script | `<storage-account>` |
+
+The `fastdl` and `assets` containers must exist before the first run: the sync script does not create them. If you only use the game server or only the storage, remove the steps you do not need.
+
+### scripts/sync-blob.sh
+
+Uploads to Azure Blob Storage go through `scripts/sync-blob.sh`, which compares the MD5 of every local file with the blob's `Content-MD5` and uploads only new or changed files. Nothing is deleted from the storage.
+
+```
+sync-blob.sh [--account <name>] --container <name> --source <dir> [--prefix <path>] [--cache-control <value>] [--dry-run]
+```
+
+| Option | Meaning |
+|--------|---------|
+| `--account` | Storage account name. Without it, the storage comes from `AZURE_STORAGE_CONNECTION_STRING` |
+| `--container` | Target container (must exist) |
+| `--source` | Local folder; its relative paths become the blob names |
+| `--prefix` | Blob path prefix (for example `models`); only blobs under it are compared |
+| `--cache-control` | `Cache-Control` set on the uploaded blobs |
+| `--dry-run` | Lists the files that would be uploaded and uploads nothing |
+
+It needs `bash`, the Azure CLI (`az`), `openssl`, `base64` and the usual coreutils (`find`, `sort`, `comm`, `mktemp`). `az` must be able to read and write the container: either signed in (`az login`, or the Azure service connection in the pipeline) with `--account`, or with `AZURE_STORAGE_CONNECTION_STRING` set and no `--account`. AVIF and WebP files are uploaded with `image/avif` and `image/webp`; other files get the content type `az` infers. The script fails when the number of uploaded files differs from the number of changed files.
+
+A dry run still lists the container, so it needs the same access. To see what a push would upload without uploading anything:
+
+```bash
+bash scripts/sync-blob.sh --account <storage-account> --container assets --source assets --dry-run
+AZURE_STORAGE_CONNECTION_STRING='<connection-string>' bash scripts/sync-blob.sh --container fastdl --source fastdl --dry-run
+```
+
+## Adding a new skin
+
+The skin id is the same in every place below (for example `dark-matter`). The full checklist, including the combined model format, is in the [l4d2-zone-server wiki](https://github.com/altair-sossai/l4d2-zone-server/blob/master/docs/weapon-skins/02-assets.md#adding-a-new-skin-checklist).
+
+1. Use only a texture-only Steam Workshop skin for the stock model of a supported weapon, and only if its author allows redistribution.
+2. **This repository:** put its materials in `materials/models/l4d2br/weapons/<weapon>_<workshopId>/`, with the paths inside each `.vmt` pointing to that folder (textures at most 1024 px). Rebuild that weapon's combined models in `models/l4d2br/weapons/<weapon>/`: the skin family index is the skin's position among that weapon's skins in `weapon_skins.cfg`. The tools that build the combined models are not versioned yet.
+3. **This repository:** add the photos in `assets/skin-shots/<id>/` (30 files, as described above) and a row in the [credits table](#weapon-skin-credits) of its weapon, updating the count in the heading and the list of authors.
+4. **l4d2-zone-server:** add the skin to the `Skins` section of `addons/sourcemod/configs/weapon_skins.cfg` (`weapon`, `skin` family index, `materials` folder), and update the `skin` index of any skin whose position changed.
+5. **[l4d2-playstats-web](https://github.com/altair-sossai/l4d2-playstats-web):** add an entry to `L4D2PlayStats.Web/L4D2PlayStats.Core/Skins/Data/skins.json` (copy an existing one: `id`, `weapon`, `rarity`, `price`, `workshopId`, `shots`, `author`, titles and descriptions in en/pt/es) and its thumbnail `L4D2PlayStats.Web/L4D2PlayStats.Web/wwwroot/imgs/skins/<id>.jpg`. With `shots` at `0` the shop shows only the thumbnail; with `1` or more it loads the photos from `<SkinShotsUrl>/<id>/` (`SkinShotsUrl` in the site settings, default `https://l4d2playstats.blob.core.windows.net/assets/skin-shots`).
+6. Deploy in the order given in [Operations → When the combined models change](https://github.com/altair-sossai/l4d2-zone-server/blob/master/docs/weapon-skins/06-operations.md#when-the-combined-models-change), then restart the game server while it is empty.
+
+## Checking that clients download the files
+
+1. The FastDL answers with `200` for a file in the downloads table:
+
+   ```bash
+   curl -I https://<your-fastdl-host>/<path>/models/l4d2br/weapons/smg/v.mdl
+   ```
+
+2. On the server, `sm plugins info l4d2_weapon_skins` shows `running` and the SourceMod error log of the day has no `not found on the server` lines.
+3. A client with `cl_allowdownload 1` shows the downloads while connecting, and the weapon uses the skin after it is equipped. The plugin always sends the models of every configured weapon, but only the materials of skins someone bought (or of every skin with `weapon_skins_preview_all 1`), so test with a bought skin.
+
+If a weapon shows `ERROR`, the models were downloaded during a map change: restart the game. More cases are in the [troubleshooting table](https://github.com/altair-sossai/l4d2-zone-server/blob/master/docs/weapon-skins/06-operations.md#troubleshooting).
 
 ## Weapon skin credits
 
