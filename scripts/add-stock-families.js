@@ -251,10 +251,6 @@ function main() {
     const repo = path.resolve(__dirname, '..');
 
     for (const weapon of readWeapons(cfgFile)) {
-        if (weapon.weapon.startsWith('weapon_melee_')) {
-            continue;
-        }
-
         const counts = new Set();
         for (const model of weapon.models) {
             const file = path.join(repo, model.combined);

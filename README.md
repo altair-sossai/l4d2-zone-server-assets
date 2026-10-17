@@ -12,7 +12,7 @@ Static files used by [l4d2-zone-server](https://github.com/altair-sossai/l4d2-zo
 | `assets/`    | —                                            | `assets/`                                              |
 
 - `models/` and `materials/` must exist on the server (the plugins precache them and add them to the downloads table) and on the FastDL (clients download them).
-  - `models/l4d2br/weapons/<weapon>/` holds one combined view model (`v.*`) and world model (`w.*`) per weapon, with one skin family per skin. The six firearms (SMG, MAC-10, MP5, pump shotgun, chrome shotgun and Magnum) start with the families of the stock model, so a weapon without a skin looks stock in the combined model too.
+  - `models/l4d2br/weapons/<weapon>/` holds one combined view model (`v.*`) and world model (`w.*`) per weapon, with one skin family per skin. Every weapon (the six firearms and the nine melee weapons) starts with the families of the stock model, so a weapon without a skin looks stock in the combined model too.
   - `materials/models/l4d2br/weapons/<weapon>_<workshopId>/` holds the textures of one skin.
   - `materials/decals/l4d2br/` holds the decals of the `map-decals` plugin.
 - `fastdl/` holds files that only clients download: the patent sprites of `l4d2_show_patent_icon` (`materials/sprites/`) and a copy of the decals. Its contents go to the root of the FastDL, next to `models/` and `materials/`.
@@ -114,20 +114,20 @@ AZURE_STORAGE_CONNECTION_STRING='<connection-string>' bash scripts/sync-blob.sh 
 
 ### scripts/add-stock-families.js
 
-Puts the families of the stock model at the start of the combined view and world models of every firearm, so family `0` looks exactly like the stock weapon. The game server uses the combined model in first person for every firearm, with the skin's family or the weapon's original family, and the anti-cheat client points the game at it to stop the flicker on animation changes. The script reads the stock models from the game VPKs (`update/` first), appends their textures and material search paths, and skips a model that already has them:
+Puts the families of the stock model at the start of the combined view and world models of every weapon, so family `0` looks exactly like the stock weapon. The game server uses the combined model in first person for every weapon with `stock_skins`, with the skin's family or the weapon's original family, and the anti-cheat client points the game at it to stop the flicker on animation changes. The script reads the stock models from the game VPKs (`update/` first), appends their textures and material search paths, and skips a model that already has them:
 
 ```bash
 node scripts/add-stock-families.js "<Left 4 Dead 2 folder>" <l4d2-zone-server>/addons/sourcemod/configs/weapon_skins.cfg [check]
 ```
 
-It prints `stock_skins` for each firearm (2 for the SMG, MAC-10 and shotguns, 1 for the MP5, 3 for the Magnum): the number of original families, and so the family of the first skin of that weapon.
+It prints `stock_skins` for each weapon (2 for the SMG, MAC-10, shotguns, cricket bat and crowbar, 3 for the Magnum, 1 for the MP5 and the other melee weapons): the number of original families, and so the family of the first skin of that weapon.
 
 ## Adding a new skin
 
 The skin id is the same in every place below (for example `dark-matter`). The full checklist, including the combined model format, is in the [l4d2-zone-server wiki](https://github.com/altair-sossai/l4d2-zone-server/blob/master/docs/weapon-skins/02-assets.md#adding-a-new-skin-checklist).
 
 1. Use only a texture-only Steam Workshop skin for the stock model of a supported weapon, and only if its author allows redistribution.
-2. **This repository:** put its materials in `materials/models/l4d2br/weapons/<weapon>_<workshopId>/`, with the paths inside each `.vmt` pointing to that folder (textures at most 1024 px). Rebuild that weapon's combined models in `models/l4d2br/weapons/<weapon>/`: the skin family index is the skin's position among that weapon's skins in `weapon_skins.cfg`, plus `stock_skins` for a firearm. The tools that build the combined models are not versioned yet; for a firearm, run `scripts/add-stock-families.js` afterwards, which puts the stock families first (see below).
+2. **This repository:** put its materials in `materials/models/l4d2br/weapons/<weapon>_<workshopId>/`, with the paths inside each `.vmt` pointing to that folder (textures at most 1024 px). Rebuild that weapon's combined models in `models/l4d2br/weapons/<weapon>/`: the skin family index is the skin's position among that weapon's skins in `weapon_skins.cfg`, plus `stock_skins`. The tools that build the combined models are not versioned yet; run `scripts/add-stock-families.js` afterwards, which puts the stock families first (see below).
 3. **This repository:** add the photos in `assets/skin-shots/<id>/` (30 files, as described above) and a row in the [credits table](#weapon-skin-credits) of its weapon, updating the count in the heading and the list of authors.
 4. **l4d2-zone-server:** add the skin to the `Skins` section of `addons/sourcemod/configs/weapon_skins.cfg` (`weapon`, `skin` family index, `materials` folder), and update the `skin` index of any skin whose position changed.
 5. **[l4d2-playstats-web](https://github.com/altair-sossai/l4d2-playstats-web):** add an entry to `L4D2PlayStats.Web/L4D2PlayStats.Core/Skins/Data/skins.json` (copy an existing one: `id`, `weapon`, `rarity`, `price`, `workshopId`, `shots`, `author`, titles and descriptions in en/pt/es) and its thumbnail `L4D2PlayStats.Web/L4D2PlayStats.Web/wwwroot/imgs/skins/<id>.jpg`. With `shots` at `0` the shop shows only the thumbnail; with `1` or more it loads the photos from `<SkinShotsUrl>/<id>/` (`SkinShotsUrl` in the site settings, default `https://l4d2playstats.blob.core.windows.net/assets/skin-shots`).
